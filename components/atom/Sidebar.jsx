@@ -9,7 +9,7 @@ const Sidebar = () => {
 
 
   return (
-    <div className='w-full lg:w-80 bg-white border-r border-gray-200 p-3 sm:p-4 overflow-y-auto'>
+    <div className='w-full h-dvh lg:w-80 bg-white border-r border-gray-200 p-3 sm:p-4 overflow-y-auto'>
       <span className=' text-xl font-medium text-gray-600'>Integrations</span>
       {/* nodes */}
       <div className='mt-4 space-y-2'>

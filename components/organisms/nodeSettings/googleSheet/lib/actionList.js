@@ -6,7 +6,8 @@ export const action = [
         id:1,
         label : 'Watch Row',
         icon: <IconTableAlias />,
-        description: 'Watch Row'
+        description: 'Watch Row',
+        type: 'watch_rows'
     },
 
     {

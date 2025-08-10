@@ -2,6 +2,8 @@ import { IconBrandTelegram, IconRoute2, IconBrandFacebook, IconBrandInstagram, I
 
 export const NodeMetaData = async (node) => {
 
+    console.log(node, 'node')
+
     switch (node.module) {
         case 'module:sheet':
             return {

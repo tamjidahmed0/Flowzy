@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export const useFlowStore = create((set) => ({
+export const useFlowStore = create((set, get) => ({
     // Node & Edge State
     nodes: [],
     edges: [],
@@ -13,11 +13,13 @@ export const useFlowStore = create((set) => ({
 
             const newNode = {
                 ...node,
+                id: `${node.type}-${Date.now()}`, // unique id
                 position: {
                     x: 100 + nodeCount * offset,
                     y: 100 + nodeCount * offset,
                 },
-                id: `${node.type}-${Date.now()}`, // unique id
+               config:{}
+
             };
 
             return {
@@ -80,7 +82,29 @@ export const useFlowStore = create((set) => ({
         set(() => ({
             nodes: [],
             edges: []
-        }))
+        })),
+
+
+
+    updateNodeContent: (nodeId, newContent, triggerType = null) => {
+        const { nodes } = get();
+
+        const updatedNodes = nodes.map((node) =>
+            node.id === nodeId
+                ? {
+                    ...node,
+                    content: {
+                        ...node.content,
+                        ...newContent,
+                    },
+
+                    ...(triggerType && { triggerType }),
+                }
+                : node
+        );
+
+        set({ nodes: updatedNodes });
+    },
 
 
 }));

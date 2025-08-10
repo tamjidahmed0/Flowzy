@@ -1,12 +1,22 @@
 'use client';
-
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Settings, Trash2, X } from 'lucide-react';
+import { Plus, Settings, Trash2, X, Play, SearchCheck, XCircleIcon, CheckCircle2 } from 'lucide-react';
 import { useFlowStore } from '@/store/useFlowStore';
 import { useNodeSettings } from '@/store/useNodeSettings';
+import GoogleSheet from '@/lib/googleSheet/googleSheet';
+import { toast } from 'sonner';
+import { useResponse } from '@/store/useResponse';
+import useExecutionDataStore from '@/store/useExecutionDataStore';
 
 
 export default function FlowBuilder() {
+    const [loadingNodeType, setLoadingNodeType] = useState(null);
+    const [nodeResult, setNodeResult] = useState({
+        node: '',
+        data: [],
+        status: null
+    });
+
     const canvasRef = useRef(null);
     const nodeRefMap = useRef({});
     const [forceUpdate, setForceUpdate] = useState(0); // Add force update state
@@ -26,6 +36,13 @@ export default function FlowBuilder() {
     const removeEdge = useFlowStore((s) => s.removeEdge);
     const setNodeType = useNodeSettings((s) => s.setNodeType);
     const setNodeSettingOpen = useNodeSettings((s) => s.setNodeSettingOpen);
+
+    const ExecutionResult = useResponse((state) => state.result)
+    const pushNodeExecutionData = useExecutionDataStore((state) => state.pushNodeExecutionData);
+    const executionData = useExecutionDataStore((state) => state.executionData);
+
+
+  
 
     // Force re-render when nodes change especially after import
     useEffect(() => {
@@ -263,19 +280,108 @@ export default function FlowBuilder() {
 
 
 
+    // function pushNodeExecutionData(nodeId, jsonData, executionDataStore) {
+    //     executionDataStore[nodeId] = {
+    //         json: jsonData,
+    //         headers: Object.keys(jsonData),
+    //         timestamp: Date.now()
+    //     };
+    // }
+
+    //single node execution
+    const handleSingleNode = async (node) => {
+
+        setLoadingNodeType(node.type)
+
+        try {
+            switch (node.type) {
+                case 'sheet': {
+
+                    const sheetName = 'Sheet1'
+                    const currentNode = nodes.find(n => n.id === node.id);
+                    const { content } = currentNode
+
+
+
+                    const result = await GoogleSheet({ spreadsheetId: content.sheetId, sheetName, containHeader: true, nodeId: currentNode.id, range: 'A1:Z' })
+                    console.log(result)
+                    if (result.status === 201) {
+                        setNodeResult({ node: node.type, data: result, status: 201 })
+
+                        pushNodeExecutionData(currentNode.id, result.data)
+
+
+
+                        toast.success('Google Sheet executed successfully', {
+                            position: 'bottom-right'
+                        })
+                    } else if (result.status === 401) {
+                        console.log('something wrong')
+                        setNodeResult({ node: node.type, data: result, status: 401 })
+                        toast.error('Google Sheet execution failed ', {
+                            position: 'bottom-right'
+                        })
+                    } else {
+                        console.log('server error')
+                        toast.error('Your Google Sheet connection has expired. Please reconnect.', {
+                            position: 'bottom-right'
+                        })
+                    }
+
+                }
+
+                    break;
+
+                case 'telegram': {
+                    console.log('telegram click')
+                }
+
+            }
+        } catch (error) {
+
+            console.log(error)
+
+        } finally {
+            setLoadingNodeType(null)
+        }
+
+
+
+    }
+
+    console.log(executionData, 'execution data store')
+
+
+    const handleExecutionDetailOpen = (node) => {
+
+        console.log(nodeResult, 'node result')
+
+        console.log(ExecutionResult, 'execution result')
+
+        // console.log(node)
+
+    }
+
+
+
     return (
         <div className="w-full h-screen bg-gray-100" onMouseMove={handleMouseMove}>
+
             <div
                 ref={canvasRef}
                 onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
-                className="relative w-full h-[100dvh] overflow-hidden cursor-grab"
+                className="relative w-full h-[100dvh] overflow-hidden cursor-grab select-none"
                 style={{
                     backgroundImage: "radial-gradient(circle, #d1d5db 1px, transparent 1px)",
                     backgroundSize: "20px 20px",
                     backgroundPosition: "0 0",
                 }}
+
+
             >
+
+
                 {nodes.length !== 0 && (
                     <svg
                         className="absolute top-0 left-0 pointer-events-none"
@@ -343,7 +449,6 @@ export default function FlowBuilder() {
                         const canReceive = canNodeReceiveConnection(node.id);
 
 
-
                         return (
                             <div
                                 key={index}
@@ -353,8 +458,37 @@ export default function FlowBuilder() {
                                 style={{ left: node?.position?.x, top: node?.position?.y }}
                             >
                                 {/* Diamond Shape */}
+
+
+
+                                {/* <button className="absolute -top-10 left-20 flex items-center justify-center bg-white shadow-xl rounded-full w-10 h-10 p-3 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                onClick={() => handleExecutionDetailOpen(node)}
+                                >
+                                 <p>1</p>
+                                </button> */}
+
+
+
+
+                                {/* <div className="absolute -top-20 left-64 -translate-x-1/2 bg-white shadow-xl rounded-xl p-3 w-64 z-50 border border-gray-300 animate-fade-in">
+                                    <div className="text-sm text-gray-800 font-medium mb-2">Execution Result</div>
+                                    <pre className="text-xs text-gray-600 whitespace-pre-wrap break-words max-h-40 overflow-auto">
+                                       lorem100
+                                    </pre>
+                                    <button
+                                        //   onClick={() => setVisibleBubbleId(null)}
+                                        className="absolute top-1 right-1 text-gray-400 hover:text-gray-600"
+                                    >
+                                        ×
+                                    </button>
+                                </div> */}
+
+
+
+
+
                                 <div
-                                    className="w-24 h-24 transform rotate-45 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border-2 border-white relative group rounded-2xl"
+                                    className={`w-24 h-24 transform rotate-45 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border-2 border-white relative group rounded-2xl`}
                                     style={{
                                         background: `linear-gradient(135deg, ${node.color}dd, ${node.color})`
                                     }}
@@ -369,6 +503,13 @@ export default function FlowBuilder() {
                                     {/* Settings and Delete buttons (counter-rotated) */}
                                     <div className="absolute top-0  transform -rotate-45 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                         <div className="flex gap-1">
+
+                                            <button
+                                                onClick={() => handleSingleNode(node)}
+                                                className="w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:bg-gray-100" >
+                                                <Play size={12} className="text-gray-600" />
+                                            </button>
+
                                             <button className="w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:bg-gray-100" onClick={() => {
                                                 setNodeType(node.type)
                                                 setNodeSettingOpen(true)
@@ -387,9 +528,184 @@ export default function FlowBuilder() {
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* single node */}
+
+                                    {loadingNodeType === node.type ? (
+                                        <div className=" absolute bottom-15 -right-8 animate-spin w-5 h-5 border-t-2 border-gray-600 rounded-full" />
+                                    ) : nodeResult.status === 201 && nodeResult.node === node.type ?
+                                        (
+                                            <div className=" absolute bottom-15 -right-8 transform -rotate-45 ">
+
+                                                <CheckCircle2 size={30} className="text-green-600" />
+
+                                            </div>
+                                        ) : nodeResult.status === 401 && nodeResult.node === node.type &&
+
+                                        (
+                                            <div className=" absolute bottom-15 -right-8 transform -rotate-45 ">
+
+
+                                                <XCircleIcon size={30} className="text-red-600" />
+
+                                            </div>
+                                        )
+
+                                    }
+
+
+
+
+                                    {/* <button className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full w-10 h-10 p-3 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                        onClick={() => handleExecutionDetailOpen(node)}
+                                    >
+                                        <p>1</p>
+                                    </button> */}
+
+                                    {ExecutionResult.executionStatus &&
+
+                                        Object.keys(ExecutionResult.executionStatus)[index] === node.id && (
+
+                                            <div>{ExecutionResult.executionStatus?.[node.id].success ? (
+                                                <button className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full p-2 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                                    onClick={() => handleExecutionDetailOpen(node)}
+                                                >
+                                                    <SearchCheck size={25} className="text-green-600" />
+                                                </button>
+                                            ) : (
+                                                <div className=" absolute bottom-15 -right-8 transform -rotate-45 ">
+
+
+                                                    <XCircleIcon size={30} className="text-red-600" />
+
+                                                </div>
+                                            )}
+
+                                            </div>
+
+                                            // <button className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full p-2 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                            //     onClick={() => handleExecutionDetailOpen(node)}
+                                            // >
+                                            // <SearchCheck size={25} className="text-green-600" />
+                                            // </button>
+
+
+                                        )
+
+
+                                    }
+
+
+
+                                    {Object.keys(executionData).length !== 0 &&
+
+                                        Object.keys(executionData)[index] === node.id && (
+                                            <div>
+                                                {/* <button className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full p-2 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                                onClick={() => handleExecutionDetailOpen(node)}
+                                            >
+                                                <SearchCheck size={25} className="text-green-600" />
+                                            </button> */}
+
+
+                                                <div className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full p-2 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                                    onClick={() => handleExecutionDetailOpen(node)}
+                                                >
+
+                                                    {Object.entries(executionData).map(([nodeId, nodeData]) => (
+                                                        <div key={nodeId} style={{ marginBottom: '20px' }}>
+
+                                                            <ul>
+                                                                {Object.entries(nodeData.json).map(([key, value]) => (
+                                                                    <li key={key}>
+                                                                        <strong>{key}</strong>: {value}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    ))}
+
+                                                </div>
+
+                                            </div>
+
+
+
+
+
+
+
+
+
+
+
+                                            // <div>{ExecutionResult.executionStatus?.[node.id].success ? (
+                                            //     <button className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full p-2 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                            //         onClick={() => handleExecutionDetailOpen(node)}
+                                            //     >
+                                            //         <SearchCheck size={25} className="text-green-600" />
+                                            //     </button>
+                                            // ) : (
+                                            //     <div className=" absolute bottom-15 -right-8 transform -rotate-45 ">
+
+
+                                            //         <XCircleIcon size={30} className="text-red-600" />
+
+                                            //     </div>
+                                            // )}
+
+                                            // </div>
+
+                                            // <button className="absolute -top-20 left-6 -rotate-45 flex items-center justify-center bg-white shadow-xl rounded-full p-2 z-50 border cursor-pointer border-gray-300 animate-fade-in"
+                                            //     onClick={() => handleExecutionDetailOpen(node)}
+                                            // >
+                                            // <SearchCheck size={25} className="text-green-600" />
+                                            // </button>
+
+
+                                        )
+
+
+                                    }
+
+
+
+
+
+
+
+                                    {/* whole execution  */}
+                                    {ExecutionResult.executionStatus &&
+                                        Object.keys(ExecutionResult.executionStatus)[index] === node.id && (
+                                            <div>{ExecutionResult.executionStatus?.[node.id].success ? (
+                                                <div className=" absolute bottom-15 -right-8 transform -rotate-45 ">
+
+                                                    <CheckCircle2 size={30} className="text-green-600" />
+
+                                                </div>
+                                            ) : (
+                                                <div className=" absolute bottom-15 -right-8 transform -rotate-45 ">
+
+
+                                                    <XCircleIcon size={30} className="text-red-600" />
+
+                                                </div>
+                                            )}
+
+                                            </div>
+                                        )}
+
+
+
+
+
+
                                 </div>
 
+
+
                                 {/* Output connector (right) */}
+
                                 <div
                                     className={`connector absolute right-[-12px] top-1/2 -translate-y-1/2 rounded-full border-2 w-6 h-6 flex items-center justify-center shadow-lg transition-all duration-200 ${canConnect
                                         ? 'bg-white border-blue-500 text-blue-500 cursor-crosshair hover:bg-blue-500 hover:text-white'
@@ -399,6 +715,8 @@ export default function FlowBuilder() {
                                 >
                                     <Plus size={14} />
                                 </div>
+
+
 
                                 {/* Input connector (left) - don't show on first node */}
                                 {index !== 0 && (
@@ -415,10 +733,12 @@ export default function FlowBuilder() {
                                 )}
 
                                 {/* Label and Description (below diamond) */}
-                                <div className="absolute top-[120px] left-1/2 transform -translate-x-1/2 text-center min-w-max">
+                                <div className="absolute top-[150px] left-1/2 transform -translate-x-1/2 text-center min-w-max">
                                     <p className="font-bold text-lg text-gray-800 mb-1">{node.label}</p>
                                     <p className="text-sm text-gray-600">{node.description}</p>
                                 </div>
+
+
                             </div>
                         );
                     })}

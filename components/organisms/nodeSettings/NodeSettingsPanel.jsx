@@ -7,16 +7,7 @@ import Telegram from './Telegram'
 
 
 
-
-
-
-
-
-
-
-
-
-const NodeSttingsPanel = ({ nodeType }) => {
+const NodeSettingsPanel = ({ nodeType }) => {
 
   switch (nodeType) {
       case 'sheet' :
@@ -33,4 +24,4 @@ const NodeSttingsPanel = ({ nodeType }) => {
 
 }
 
-export default NodeSttingsPanel
+export default NodeSettingsPanel

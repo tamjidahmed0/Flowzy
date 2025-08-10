@@ -16,7 +16,6 @@ const rawNodes = [
     description: 'Google Sheet to read...',
     icon: <IconFileSpreadsheet />,
     color: '#0F9D58',
-    content: {},
     type: 'sheet',
     module: 'module:sheet'
   },
@@ -26,7 +25,6 @@ const rawNodes = [
     description: 'Router to connect nodes',
     icon: <IconRoute2 />,
     color: '#6366F1',
-    content: {},
     type: 'router',
     module: 'module:router'
   },
@@ -36,7 +34,6 @@ const rawNodes = [
     description: 'Add telegram api...',
     icon: <IconBrandTelegram />,
     color: '#0088cc',
-    content: {},
     type: 'telegram',
     module: 'module:telegram'
   },
@@ -47,7 +44,6 @@ const rawNodes = [
     description: 'Add Facebook api...',
     icon: <IconBrandFacebook />,
     color: '#1877F2',
-    content: {},
     type: 'facebook',
     module: 'module:facebook'
   },
@@ -58,7 +54,6 @@ const rawNodes = [
     description: 'Add Facebook api...',
     icon: <IconBrandFacebook />,
     color: '#1877F2',
-    content: {},
     type: 'facebook_page',
     module: 'module:facebook_page'
   },
@@ -69,7 +64,6 @@ const rawNodes = [
     description: 'Add Instagram api...',
     icon: <IconBrandInstagram />,
     color: '#E1306C',
-    content: {},
     type: 'instagram',
     module: 'module:instagram'
   },
@@ -80,7 +74,6 @@ const rawNodes = [
     description: 'Receive data',
     icon: <IconWebhook />,
     color: '#6366F1',
-    content: {},
     type: 'webhook',
     module: 'module:webhook'
   },

@@ -122,5 +122,10 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    
   }
+}
+/* example */
+.bubble {
+  @apply fixed bg-white rounded-lg shadow-lg p-4 max-h-52 overflow-auto z-50;
 }

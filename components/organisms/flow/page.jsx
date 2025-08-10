@@ -2,7 +2,7 @@
 import React from 'react'
 import Header from '@/components/atom/Header'
 import Sidebar from '@/components/atom/Sidebar'
-import FlowBuilder from '../example/page'
+import FlowBuilder from '@/components/atom/Flow-builder/FlowBuilder'
 import NodeSetting from '@/components/atom/NodeSetting'
 import { useNodeSettings } from '@/store/useNodeSettings'
 
@@ -29,7 +29,9 @@ const Flow = () => {
 
 
         <div className="flex-1">
-          <FlowBuilder />
+  
+            <FlowBuilder />
+      
         </div>
 
         <div className={`${isOpen ? 'block' : 'hidden'}`}>
